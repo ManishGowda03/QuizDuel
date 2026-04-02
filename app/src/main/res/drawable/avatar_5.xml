@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="60dp" android:height="60dp"
+    android:viewportWidth="60" android:viewportHeight="60">
+    <!-- Background -->
+    <path android:fillColor="#B71C1C"
+        android:pathData="M30,30m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0"/>
+    <!-- Helmet -->
+    <path android:fillColor="#90A4AE"
+        android:pathData="M18,20h24v14H18z"/>
+    <!-- Helmet top -->
+    <path android:fillColor="#90A4AE"
+        android:pathData="M22,14h16v6H22z"/>
+    <!-- Helmet visor -->
+    <path android:fillColor="#37474F"
+        android:pathData="M20,24h20v6H20z"/>
+    <!-- Visor slit -->
+    <path android:fillColor="#FFD700"
+        android:pathData="M22,26h16v2H22z"/>
+    <!-- Plume -->
+    <path android:fillColor="#FF1744"
+        android:pathData="M28,10h4v6h-4z"/>
+    <!-- Armor body -->
+    <path android:fillColor="#90A4AE"
+        android:pathData="M16,34h28v14H16z"/>
+    <!-- Armor detail -->
+    <path android:fillColor="#607D8B"
+        android:pathData="M16,38h28v2H16z"/>
+    <path android:fillColor="#607D8B"
+        android:pathData="M16,42h28v2H16z"/>
+    <!-- Shield -->
+    <path android:fillColor="#1565C0"
+        android:pathData="M8,32h8v14H8z"/>
+    <path android:fillColor="#FFD700"
+        android:pathData="M9,33h6v6H9z"/>
+    <!-- Sword -->
+    <path android:fillColor="#CFD8DC"
+        android:pathData="M46,20h3v18h-3z"/>
+    <path android:fillColor="#FFD700"
+        android:pathData="M43,34h9v3h-9z"/>
+</vector>

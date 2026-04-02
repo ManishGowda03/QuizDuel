@@ -1,0 +1,85 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+
+# ==============================
+# 🔧 Gradle & Build Files
+# ==============================
+.gradle/
+build/
+**/build/
+
+# ==============================
+# 📱 Android Studio / IntelliJ
+# ==============================
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# ==============================
+# 🔥 Firebase (IMPORTANT)
+# ==============================
+google-services.json
+
+# ==============================
+# 📦 Generated APK / AAB
+# ==============================
+*.apk
+*.aab
+
+# ==============================
+# 🧹 Logs & Temporary Files
+# ==============================
+*.log
+*.tmp
+
+# ==============================
+# 📸 Android Captures / Native Build
+# ==============================
+/captures
+.externalNativeBuild
+.cxx/
+
+# ==============================
+# 🖥️ OS Files
+# ==============================
+.DS_Store
+Thumbs.db
+
+# ==============================
+# 🧠 Kotlin / KSP / Kapt
+# ==============================
+*.kotlin_module
+.ksp/
+build/generated/
+
+# ==============================
+# 🧪 Unit Test / Coverage
+# ==============================
+/test-output/
+/coverage/
+
+# ==============================
+# 🔒 Keystore Files (VERY IMPORTANT)
+# ==============================
+*.jks
+*.keystore
+
+# ==============================
+# 🧾 Misc
+# ==============================
+*.hprof

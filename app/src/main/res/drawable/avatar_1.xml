@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="60dp" android:height="60dp"
+    android:viewportWidth="60" android:viewportHeight="60">
+    <!-- Background circle -->
+    <path android:fillColor="#1565C0"
+        android:pathData="M30,30m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0"/>
+    <!-- Head -->
+    <path android:fillColor="#90CAF9"
+        android:pathData="M20,18h20v16H20z"/>
+    <!-- Eyes -->
+    <path android:fillColor="#1565C0"
+        android:pathData="M24,22h4v4h-4z"/>
+    <path android:fillColor="#1565C0"
+        android:pathData="M32,22h4v4h-4z"/>
+    <!-- Mouth -->
+    <path android:fillColor="#1565C0"
+        android:pathData="M23,28h14v3H23z"/>
+    <!-- Antenna -->
+    <path android:fillColor="#90CAF9"
+        android:pathData="M28,14h4v4h-4z"/>
+    <path android:fillColor="#FFD700"
+        android:pathData="M30,12m-3,0a3,3 0,1 1,6 0a3,3 0,1 1,-6 0"/>
+    <!-- Body -->
+    <path android:fillColor="#90CAF9"
+        android:pathData="M22,34h16v10H22z"/>
+    <!-- Body detail -->
+    <path android:fillColor="#1565C0"
+        android:pathData="M26,37h8v4h-8z"/>
+</vector>

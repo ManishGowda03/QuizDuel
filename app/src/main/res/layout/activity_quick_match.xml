@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/clay_bg"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingHorizontal="32dp">
+
+    <ProgressBar
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:indeterminateTint="@color/clay_primary" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:gravity="center"
+        android:text="Finding an opponent…"
+        android:textColor="@color/clay_text_dark"
+        android:textSize="22sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="This may take a few seconds"
+        android:textColor="@color/clay_text_muted"
+        android:textSize="15sp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCancel"
+        android:layout_width="wrap_content"
+        android:layout_height="52dp"
+        android:layout_marginTop="48dp"
+        android:backgroundTint="@color/clay_white"
+        android:elevation="2dp"
+        android:paddingHorizontal="40dp"
+        android:text="Cancel"
+        android:textColor="@color/clay_text_muted"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:cornerRadius="100dp" />
+
+</LinearLayout>

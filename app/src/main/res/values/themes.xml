@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.QuizDuel" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/clay_primary</item>
+        <item name="colorPrimaryVariant">@color/clay_primary_dark</item>
+        <item name="colorOnPrimary">@color/clay_white</item>
+
+        <item name="android:windowBackground">@color/clay_bg</item>
+        <item name="android:statusBarColor">@color/clay_bg</item>
+        <item name="android:navigationBarColor">@color/clay_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="Theme.QuizDuel.Splash" parent="Theme.QuizDuel">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:statusBarColor">@color/splash_bg</item>
+        <item name="android:navigationBarColor">@color/splash_bg</item>
+        <item name="android:windowBackground">@color/splash_bg</item>
+    </style>
+
+    <style name="Theme.QuizDuel.Home" parent="Theme.QuizDuel">
+        <item name="android:statusBarColor">@color/clay_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/clay_white</item>
+    </style>
+
+    <style name="Theme.QuizDuel.Admin" parent="Theme.QuizDuel">
+        <item name="android:statusBarColor">@color/pure_white</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:navigationBarColor">@color/canvas_bg</item>
+    </style>
+
+</resources>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="60dp" android:height="60dp"
+    android:viewportWidth="60" android:viewportHeight="60">
+    <!-- Background -->
+    <path android:fillColor="#212121"
+        android:pathData="M30,30m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0"/>
+    <!-- Head -->
+    <path android:fillColor="#FFCCBC"
+        android:pathData="M22,16m0,0a8,8 0,1 1,16 0a8,8 0,1 1,-16 0"/>
+    <!-- Mask -->
+    <path android:fillColor="#212121"
+        android:pathData="M20,20h20v6H20z"/>
+    <!-- Eyes showing above mask -->
+    <path android:fillColor="#FF1744"
+        android:pathData="M24,17h4v4h-4z"/>
+    <path android:fillColor="#FF1744"
+        android:pathData="M32,17h4v4h-4z"/>
+    <!-- Body/outfit -->
+    <path android:fillColor="#212121"
+        android:pathData="M18,32h24v14H18z"/>
+    <!-- Belt -->
+    <path android:fillColor="#FF1744"
+        android:pathData="M18,36h24v3H18z"/>
+    <!-- Arms -->
+    <path android:fillColor="#212121"
+        android:pathData="M12,32h6v10H12z"/>
+    <path android:fillColor="#212121"
+        android:pathData="M42,32h6v10H42z"/>
+    <!-- Sword -->
+    <path android:fillColor="#CFD8DC"
+        android:pathData="M46,20h3v16h-3z"/>
+    <path android:fillColor="#FFD700"
+        android:pathData="M44,34h7v4h-7z"/>
+</vector>

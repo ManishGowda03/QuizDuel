@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="60dp" android:height="60dp"
+    android:viewportWidth="60" android:viewportHeight="60">
+    <!-- Background -->
+    <path android:fillColor="#1B5E20"
+        android:pathData="M30,30m-28,0a28,28 0,1 1,56 0a28,28 0,1 1,-56 0"/>
+    <!-- Head (oval) -->
+    <path android:fillColor="#69F0AE"
+        android:pathData="M18,14m0,0a12,14 0,1 1,24 0a12,14 0,1 1,-24 0"/>
+    <!-- Big eyes -->
+    <path android:fillColor="#000000"
+        android:pathData="M21,10m0,0a5,6 0,1 1,10 0a5,6 0,1 1,-10 0"/>
+    <path android:fillColor="#000000"
+        android:pathData="M29,10m0,0a5,6 0,1 1,10 0a5,6 0,1 1,-10 0"/>
+    <!-- Eye shine -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M23,8m0,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0"/>
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M31,8m0,0a2,2 0,1 1,4 0a2,2 0,1 1,-4 0"/>
+    <!-- Small mouth -->
+    <path android:fillColor="#1B5E20"
+        android:pathData="M26,22h8v2H26z"/>
+    <!-- Antennae -->
+    <path android:fillColor="#69F0AE"
+        android:pathData="M24,6L18,2"/>
+    <path android:fillColor="#69F0AE"
+        android:strokeWidth="2"
+        android:pathData="M36,6L42,2"/>
+    <!-- Body -->
+    <path android:fillColor="#69F0AE"
+        android:pathData="M20,28h20v18H20z"/>
+    <!-- Suit detail -->
+    <path android:fillColor="#1B5E20"
+        android:pathData="M27,31h6v8h-6z"/>
+    <!-- Arms -->
+    <path android:fillColor="#69F0AE"
+        android:pathData="M12,28h8v8H12z"/>
+    <path android:fillColor="#69F0AE"
+        android:pathData="M40,28h8v8H40z"/>
+</vector>

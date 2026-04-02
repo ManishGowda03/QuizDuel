@@ -44,7 +44,6 @@ A real-time multiplayer quiz battle Android app built using **Kotlin, MVVM archi
 ### ☁️ Firebase
 - Firebase Authentication (Email/Password)
 - Firebase Realtime Database (multiplayer sync)
-- Firebase Storage (images)
 
 ### 🎨 UI
 - Material Components

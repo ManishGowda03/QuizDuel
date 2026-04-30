@@ -1,6 +1,13 @@
 # QuizDuel 🎯
 
-A real-time multiplayer quiz battle Android app built using **Kotlin, MVVM architecture, and Firebase**.
+A real-time multiplayer quiz battle Android app built using **Kotlin, MVVM architecture, and Firebase Realtime Database**.
+
+---
+
+## 📥 Download APK
+
+👉 [Download Latest Version](#)  
+(*Add your GitHub Release link here*)
 
 ---
 
@@ -15,17 +22,25 @@ A real-time multiplayer quiz battle Android app built using **Kotlin, MVVM archi
 - Quick Match (auto matchmaking)
 - Create Room & Invite Friends
 - Join Room via Code
-- Real-time opponent synchronization
+- Real-time synchronized gameplay
 
 ### 👥 Social Features
 - Friends module
-- Invite friends to battle
+- Invite friends to battles
 - Battle history tracking
 
-### 📡 Real-Time Sync
-- Live question updates
-- Answer comparison
+### 📡 Real-Time Sync (Core Feature)
+- Live question synchronization between players
+- Answer comparison with time-based scoring
 - Instant result calculation
+- Fair gameplay with synchronized timers
+
+### 🌐 Network Handling (Advanced)
+- Instant opponent disconnect detection
+- Handles internet loss gracefully
+- Prevents stuck matches using:
+  - Firebase `onDisconnect()`
+  - Heartbeat (lastSeen) mechanism
 
 ### 📥 Offline Support
 - Quiz topics auto-download when internet is available
@@ -43,7 +58,7 @@ A real-time multiplayer quiz battle Android app built using **Kotlin, MVVM archi
 
 ### ☁️ Firebase
 - Firebase Authentication (Email/Password)
-- Firebase Realtime Database (multiplayer sync)
+- Firebase Realtime Database (real-time multiplayer sync)
 
 ### 🎨 UI
 - Material Components
@@ -55,26 +70,20 @@ A real-time multiplayer quiz battle Android app built using **Kotlin, MVVM archi
 - Glide (topic images)
 - Coil + SVG (DiceBear avatars)
 
-### ⚡ Async
+### ⚡ Async Handling
 - Kotlin Coroutines
-- Firebase Listeners
+- Firebase Realtime Listeners
 
 ---
 
 ## 🧠 Modules
 
-- Authentication Module
-- Quiz Engine Module
-- Multiplayer Module
-- Real-Time Sync Module
-- Friends Module
-- Battle History Module
-
----
-
-## 🔥 Upcoming Features
-
-- 🤖 AI-based MCQ Generator from uploaded files
+- Authentication Module  
+- Quiz Engine Module  
+- Multiplayer Module  
+- Real-Time Sync Module  
+- Friends Module  
+- Battle History Module  
 
 ---
 
@@ -88,5 +97,3 @@ Add your own Firebase configuration file from Firebase Console.
 ## 👨‍💻 Author
 
 **Manish Gowda**
-
----

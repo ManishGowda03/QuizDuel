@@ -1,10 +1,14 @@
 package com.quizduel.app.ui.duel
 
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.Network
+import android.content.Context
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -16,6 +20,9 @@ import coil.load
 import coil.decode.SvgDecoder
 import com.quizduel.app.ui.profile.AvatarUtils
 import com.quizduel.app.ui.home.DialogUtils
+import com.quizduel.app.ui.home.HomeActivity
+import com.quizduel.app.utils.NetworkUtils
+
 
 class BattleActivity : AppCompatActivity() {
 
@@ -49,7 +56,17 @@ class BattleActivity : AppCompatActivity() {
 
     private var timerRunnable: Runnable? = null
     private var reviewRunnable: Runnable? = null
+
     private var opponentLeftDialogShown = false
+
+    private var serverTimeOffset = 0L
+
+    private lateinit var connectivityManager: ConnectivityManager
+
+    private lateinit var networkCallback: ConnectivityManager.NetworkCallback
+
+    private val heartbeatHandler = Handler(Looper.getMainLooper())
+    private lateinit var heartbeatRunnable: Runnable
 
     companion object {
         const val ANSWER_NONE = "NONE"
@@ -61,18 +78,69 @@ class BattleActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityBattleBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        if (!NetworkUtils.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
 
         window.statusBarColor = getColor(com.quizduel.app.R.color.clay_bg)
         androidx.core.view.WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = true
+
+        FirebaseDatabase.getInstance().getReference(".info/serverTimeOffset")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    serverTimeOffset = snapshot.getValue(Long::class.java) ?: 0L
+                }
+                override fun onCancelled(error: DatabaseError) {}
+            })
 
         roomCode = intent.getStringExtra("ROOM_CODE") ?: run { finish(); return }
         mySlot = intent.getStringExtra("PLAYER_SLOT") ?: "player1"
         opponentSlot = if (mySlot == "player1") "player2" else "player1"
 
+        val playerRef = db.child("rooms").child(roomCode).child("players").child(mySlot)
+
+// 🔥 instant disconnect handling
+        playerRef.onDisconnect().removeValue()
+
+        db.child("rooms").child(roomCode).child("status")
+            .onDisconnect().setValue("abandoned")
+
+        val lastSeenRef = db.child("rooms").child(roomCode)
+            .child("players").child(mySlot).child("lastSeen")
+
+        heartbeatRunnable = object : Runnable {
+            override fun run() {
+                lastSeenRef.setValue(ServerValue.TIMESTAMP)
+                heartbeatHandler.postDelayed(this, 3000)
+            }
+        }
+
+        heartbeatHandler.post(heartbeatRunnable)
+
         setupClickListeners()
         loadPlayerNames()
         listenForOpponentScore()
         listenForOpponentLeft()
+
+        connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        networkCallback = object : ConnectivityManager.NetworkCallback() {
+            override fun onLost(network: Network) {
+                runOnUiThread {
+                    if (!isFinishing) {
+
+                        db.child("rooms").child(roomCode).child("status").setValue("abandoned")
+
+                        Toast.makeText(this@BattleActivity, "Internet lost", Toast.LENGTH_SHORT).show()
+                        endBattle()
+                    }
+                }
+            }
+        }
+
+        connectivityManager.registerDefaultNetworkCallback(networkCallback)
 
         if (mySlot == "player1") {
             loadAndShuffleQuestions()
@@ -86,16 +154,73 @@ class BattleActivity : AppCompatActivity() {
     private fun listenForOpponentLeft() {
         opponentLeftListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val status = snapshot.child("status")
-                    .getValue(String::class.java) ?: return
-                if (status == "abandoned" && !opponentLeftDialogShown && !isFinishing) {
+
+                val opponentExists = snapshot.child("players").child(opponentSlot).exists()
+                val status = snapshot.child("status").getValue(String::class.java)
+
+                val lastSeen = snapshot.child("players")
+                    .child(opponentSlot)
+                    .child("lastSeen")
+                    .getValue(Long::class.java)
+
+                val currentTime = System.currentTimeMillis()
+
+                if ((status == "abandoned" || !opponentExists) && !isFinishing && !opponentLeftDialogShown) {
                     opponentLeftDialogShown = true
-                    showOpponentLeftDialog()
+                    // 🔥 STOP EVERYTHING
+                    timerRunnable?.let { handler.removeCallbacks(it) }
+                    reviewRunnable?.let { handler.removeCallbacks(it) }
+
+                    mainListener?.let {
+                        db.child("rooms").child(roomCode).removeEventListener(it)
+                    }
+
+                    opponentLeftListener?.let {
+                        db.child("rooms").child(roomCode).removeEventListener(it)
+                    }
+
+                    // 🔥 SHOW MESSAGE THEN EXIT
+                    AlertDialog.Builder(this@BattleActivity)
+                        .setTitle("Opponent Left")
+                        .setMessage("Your opponent has left the match.")
+                        .setCancelable(false)
+                        .setPositiveButton("OK") { _, _ ->
+                            startActivity(
+                                Intent(this@BattleActivity, HomeActivity::class.java).apply {
+                                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                                }
+                            )
+                            finish()
+                        }
+                        .show()
+                }
+                else if (lastSeen != null && currentTime - lastSeen > 8000 && !isFinishing && !opponentLeftDialogShown) {
+                    opponentLeftDialogShown = true
+
+                    timerRunnable?.let { handler.removeCallbacks(it) }
+                    reviewRunnable?.let { handler.removeCallbacks(it) }
+
+                    AlertDialog.Builder(this@BattleActivity)
+                        .setTitle("Opponent Disconnected")
+                        .setMessage("Connection lost with opponent.")
+                        .setCancelable(false)
+                        .setPositiveButton("OK") { _, _ ->
+                            startActivity(
+                                Intent(this@BattleActivity, HomeActivity::class.java).apply {
+                                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                                }
+                            )
+                            finish()
+                        }
+                        .show()
                 }
             }
+
             override fun onCancelled(error: DatabaseError) {}
         }
-        db.child("rooms").child(roomCode).addValueEventListener(opponentLeftListener!!)
+
+        db.child("rooms").child(roomCode)
+            .addValueEventListener(opponentLeftListener!!)
     }
 
     private fun showOpponentLeftDialog() {
@@ -349,10 +474,14 @@ class BattleActivity : AppCompatActivity() {
                                             triggerReviewPhase(index)
                                         }
                                     }
-                                    val elapsed = System.currentTimeMillis() - serverTime
+                                    val currentTime = System.currentTimeMillis() + serverTimeOffset
+                                    val elapsed = currentTime - serverTime
+
                                     val remaining = (QUESTION_DURATION_MS - elapsed)
-                                        .coerceAtLeast(500L)
-                                    handler.postDelayed(reviewRunnable!!, remaining + 200L)
+                                        .coerceAtLeast(0L)
+
+// 🔥 no extra delay
+                                    handler.postDelayed(reviewRunnable!!, remaining)
                                 }
                         }
                         override fun onCancelled(error: DatabaseError) {}
@@ -381,7 +510,8 @@ class BattleActivity : AppCompatActivity() {
 
         timerRunnable = object : Runnable {
             override fun run() {
-                val elapsed = System.currentTimeMillis() - serverStartTime
+                val currentTime = System.currentTimeMillis() + serverTimeOffset
+                val elapsed = currentTime - serverStartTime
                 val remaining = QUESTION_DURATION_MS - elapsed
 
                 if (remaining <= 0) {
@@ -421,7 +551,7 @@ class BattleActivity : AppCompatActivity() {
 
     private fun onOptionClicked(option: String) {
         if (inReviewPhase || myAnsweredTime != -1L) return
-        myAnsweredTime = System.currentTimeMillis()
+        myAnsweredTime = System.currentTimeMillis() + serverTimeOffset
         mySelectedOption = option
         highlightSelected(option)
         enableOptions(false)
@@ -451,7 +581,9 @@ class BattleActivity : AppCompatActivity() {
                         .getValue(String::class.java) ?: ANSWER_NONE
                     val p2 = snapshot.child("player2Answer")
                         .getValue(String::class.java) ?: ANSWER_NONE
-                    if (p1 != ANSWER_NONE && p2 != ANSWER_NONE) {
+                    val opponentExists = snapshot.child("players").child(opponentSlot).exists()
+
+                    if (p1 != ANSWER_NONE && (p2 != ANSWER_NONE || !opponentExists)) {
                         reviewRunnable?.let { handler.removeCallbacks(it) }
                         triggerReviewPhase(currentIndex)
                     }
@@ -678,9 +810,13 @@ class BattleActivity : AppCompatActivity() {
     // ── FIX ISSUE 6: set abandoned status when back pressed ──────────────────
 
     override fun onBackPressed() {
-        // Set room status to abandoned so opponent sees dialog
-        db.child("rooms").child(roomCode).child("status").setValue("abandoned")
-        endBattle()
+        val roomRef = db.child("rooms").child(roomCode)
+        // 🔥 wait for Firebase write to complete
+        roomRef.child("status").setValue("abandoned")
+            .addOnSuccessListener {
+                roomRef.child("players").child(mySlot).removeValue()
+                endBattle()
+            }
     }
 
     override fun onDestroy() {
@@ -698,5 +834,9 @@ class BattleActivity : AppCompatActivity() {
         opponentLeftListener?.let {
             db.child("rooms").child(roomCode).removeEventListener(it)
         }
+        if (::connectivityManager.isInitialized) {
+            connectivityManager.unregisterNetworkCallback(networkCallback)
+        }
+        heartbeatHandler.removeCallbacks(heartbeatRunnable)
     }
 }

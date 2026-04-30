@@ -25,6 +25,7 @@ import com.quizduel.app.ui.leaderboard.LeaderboardFragment
 import com.quizduel.app.ui.profile.AvatarUtils
 import com.quizduel.app.ui.profile.ProfileFragment
 import com.quizduel.app.ui.admin.AdminActivity
+import com.quizduel.app.utils.NetworkUtils
 
 class HomeActivity : AppCompatActivity() {
 
@@ -105,9 +106,19 @@ class HomeActivity : AppCompatActivity() {
             // Fragment Navigation
             when (item.itemId) {
                 R.id.nav_home -> loadFragment(HomeFragment())
-                R.id.nav_battle -> loadFragment(BattleFragment())
-                R.id.nav_leaderboard -> loadFragment(LeaderboardFragment())
-                R.id.nav_profile -> loadFragment(ProfileFragment())
+                R.id.nav_battle -> {
+                    NetworkUtils.requireInternet(this) {
+                        loadFragment(BattleFragment())
+                    }
+                }
+                R.id.nav_leaderboard -> {
+                    NetworkUtils.requireInternet(this) {
+                        loadFragment(LeaderboardFragment())
+                    }
+                }
+                R.id.nav_profile -> {
+                    loadFragment(ProfileFragment())
+                }
             }
             true
         }

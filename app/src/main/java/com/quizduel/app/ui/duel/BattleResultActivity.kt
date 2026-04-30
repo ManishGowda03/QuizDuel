@@ -26,6 +26,8 @@ class BattleResultActivity : AppCompatActivity() {
 
     private var opponentLeftResultListener: ValueEventListener? = null
 
+    private var rematchHandled = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityBattleResultBinding.inflate(layoutInflater)
@@ -172,6 +174,7 @@ class BattleResultActivity : AppCompatActivity() {
 
                 // FIX ISSUE 2: Opponent declined my rematch request
                 if (myRematch == "requested" && oppRematch == "declined" && !isFinishing) {
+                    rematchHandled = true
                     rematchListener?.let {
                         db.child("rooms").child(roomCode).child("rematch").removeEventListener(it)
                     }
@@ -246,7 +249,7 @@ class BattleResultActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val status = snapshot.child("status")
                     .getValue(String::class.java) ?: return
-                if (status == "abandoned" && !isFinishing) {
+                if (status == "abandoned" && !isFinishing && !rematchHandled) {
                     opponentLeftResultListener?.let {
                         db.child("rooms").child(roomCode).removeEventListener(it)
                     }

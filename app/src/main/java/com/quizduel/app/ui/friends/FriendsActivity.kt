@@ -17,6 +17,7 @@ import com.quizduel.app.data.model.FriendRequest
 import com.quizduel.app.data.model.RoomPlayer
 import com.quizduel.app.databinding.ActivityFriendsBinding
 import com.quizduel.app.ui.duel.WaitingLobbyActivity
+import com.quizduel.app.utils.NetworkUtils
 
 class FriendsActivity : AppCompatActivity() {
 
@@ -92,7 +93,13 @@ class FriendsActivity : AppCompatActivity() {
                     return
                 }
 
-                searchRunnable = Runnable { searchPlayers(query) }
+                searchRunnable = Runnable {
+                    if (!NetworkUtils.isInternetAvailable(this@FriendsActivity)) {
+                        Toast.makeText(this@FriendsActivity, "No internet connection", Toast.LENGTH_SHORT).show()
+                        return@Runnable
+                    }
+                    searchPlayers(query)
+                }
                 searchHandler.postDelayed(searchRunnable!!, 500)
             }
         })
@@ -127,6 +134,10 @@ class FriendsActivity : AppCompatActivity() {
     }
 
     private fun sendFriendRequest(user: FriendModel) {
+        if (!NetworkUtils.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show()
+            return
+        }
         val myUid = auth.currentUser?.uid ?: return
 
         db.child("users").child(myUid)
@@ -193,6 +204,10 @@ class FriendsActivity : AppCompatActivity() {
     }
 
     private fun acceptFriendRequest(request: FriendRequest) {
+        if (!NetworkUtils.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show()
+            return
+        }
         val myUid = auth.currentUser?.uid ?: return
 
         db.child("friends").child(myUid).child("friendsList").child(request.uid).setValue(true)
@@ -204,6 +219,10 @@ class FriendsActivity : AppCompatActivity() {
     }
 
     private fun rejectFriendRequest(request: FriendRequest) {
+        if (!NetworkUtils.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show()
+            return
+        }
         val myUid = auth.currentUser?.uid ?: return
 
         db.child("friends").child(myUid).child("receivedRequests").child(request.uid).removeValue()
@@ -263,6 +282,10 @@ class FriendsActivity : AppCompatActivity() {
     }
 
     private fun openInviteTopicPicker(friend: FriendModel) {
+        if (!NetworkUtils.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show()
+            return
+        }
         startActivity(Intent(this, InviteTopicPickerActivity::class.java).apply {
             putExtra("FRIEND_UID", friend.uid)
             putExtra("FRIEND_USERNAME", friend.username)

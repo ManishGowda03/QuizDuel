@@ -13,6 +13,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.quizduel.app.data.model.RoomPlayer
 import com.quizduel.app.databinding.ActivityJoinRoomBinding
+import com.quizduel.app.utils.NetworkUtils
 
 class JoinRoomActivity : AppCompatActivity() {
 
@@ -32,15 +33,27 @@ class JoinRoomActivity : AppCompatActivity() {
 
         binding.etRoomCode.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
-                attemptJoin()
+                NetworkUtils.requireInternet(this) {
+                    attemptJoin()
+                }
                 true
             } else false
         }
 
-        binding.btnJoinRoom.setOnClickListener { attemptJoin() }
+        binding.btnJoinRoom.setOnClickListener {
+            NetworkUtils.requireInternet(this) {
+                attemptJoin()
+            }
+        }
     }
 
     private fun attemptJoin() {
+
+        if (!NetworkUtils.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val code = binding.etRoomCode.text.toString().trim().uppercase()
         if (code.length != 6) {
             showError("Please enter a valid 6-character code")

@@ -1,6 +1,7 @@
 package com.quizduel.app.ui.duel
 
 import android.content.Intent
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.View
@@ -12,6 +13,9 @@ import coil.load
 import coil.decode.SvgDecoder
 import com.quizduel.app.R
 import com.quizduel.app.ui.profile.AvatarUtils
+import com.quizduel.app.utils.NetworkUtils
+import android.net.Network
+import android.content.Context
 
 class WaitingLobbyActivity : AppCompatActivity() {
 
@@ -21,6 +25,12 @@ class WaitingLobbyActivity : AppCompatActivity() {
     private lateinit var roomCode: String
     private lateinit var playerSlot: String
     private var isQuickMatch = false
+
+    private lateinit var connectivityManager: ConnectivityManager
+    private lateinit var networkCallback: ConnectivityManager.NetworkCallback
+
+    private val heartbeatHandler = android.os.Handler(android.os.Looper.getMainLooper())
+    private lateinit var heartbeatRunnable: Runnable
 
     private var roomListener: ValueEventListener? = null
     private var countdownTimer: CountDownTimer? = null
@@ -37,12 +47,38 @@ class WaitingLobbyActivity : AppCompatActivity() {
         binding = ActivityWaitingLobbyBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        if (!NetworkUtils.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
+
         window.statusBarColor = getColor(com.quizduel.app.R.color.clay_bg)
         androidx.core.view.WindowCompat.getInsetsController(window, window.decorView).isAppearanceLightStatusBars = true
 
         roomCode = intent.getStringExtra("ROOM_CODE") ?: run { finish(); return }
         playerSlot = intent.getStringExtra("PLAYER_SLOT") ?: "player1"
         isQuickMatch = intent.getBooleanExtra(EXTRA_IS_QUICK_MATCH, false)
+
+        val playerRef = db.child("rooms").child(roomCode).child("players").child(playerSlot)
+
+// 🔥 instant disconnect handling (fix delay issue)
+        playerRef.onDisconnect().removeValue()
+
+        db.child("rooms").child(roomCode).child("status")
+            .onDisconnect().setValue("abandoned")
+
+        val lastSeenRef = db.child("rooms").child(roomCode)
+            .child("players").child(playerSlot).child("lastSeen")
+
+        heartbeatRunnable = object : Runnable {
+            override fun run() {
+                lastSeenRef.setValue(ServerValue.TIMESTAMP)
+                heartbeatHandler.postDelayed(this, 3000) // every 3 sec
+            }
+        }
+
+        heartbeatHandler.post(heartbeatRunnable)
 
         binding.tvRoomCode.text = roomCode
         binding.btnCopyCode.setOnClickListener { copyCodeToClipboard() }
@@ -51,12 +87,74 @@ class WaitingLobbyActivity : AppCompatActivity() {
         // Both players listen for the countdownStart flag written by player1
         listenForOpponent()
 
+        connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        networkCallback = object : ConnectivityManager.NetworkCallback() {
+            override fun onLost(network: Network) {
+                runOnUiThread {
+                    if (!isFinishing) {
+
+                        db.child("rooms").child(roomCode).child("status").setValue("abandoned")
+
+                        Toast.makeText(this@WaitingLobbyActivity, "Internet lost", Toast.LENGTH_SHORT).show()
+                        cancelAndLeave()
+                    }
+                }
+            }
+        }
+
+        connectivityManager.registerDefaultNetworkCallback(networkCallback)
+
+        db.child("rooms").child(roomCode).child("countdownStart")
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val started = snapshot.getValue(Boolean::class.java) ?: false
+
+                    if (started && !countdownStarted) {
+                        countdownStarted = true
+
+                        countdownTimer?.cancel()
+                        binding.tvTimeout.visibility = View.GONE
+                        binding.btnCancel.visibility = View.GONE
+                        binding.btnCopyCode.visibility = View.GONE
+
+                        start321Countdown() // 🔥 BOTH players start from here
+                    }
+                }
+
+                override fun onCancelled(error: DatabaseError) {}
+            })
+
         if (isQuickMatch) startTimeoutCountdown()
     }
 
     private fun listenForOpponent() {
         roomListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+
+                val status = snapshot.child("status").getValue(String::class.java)
+
+                val lastSeen = snapshot.child("players")
+                    .child(if (playerSlot == "player1") "player2" else "player1")
+                    .child("lastSeen")
+                    .getValue(Long::class.java)
+
+                val currentTime = System.currentTimeMillis()
+
+                if (status == "abandoned" && !navigated) {
+                    navigated = true
+                    Toast.makeText(this@WaitingLobbyActivity, "Opponent left", Toast.LENGTH_SHORT).show()
+                    finish()
+                    return
+                }
+
+                if (lastSeen != null && currentTime - lastSeen > 8000 && !navigated) {
+                    navigated = true
+                    Toast.makeText(this@WaitingLobbyActivity, "Opponent disconnected", Toast.LENGTH_SHORT).show()
+                    finish()
+                    return
+                }
+
                 if (navigated) return
 
                 val topicName = snapshot.child("topicName").getValue(String::class.java) ?: ""
@@ -121,24 +219,12 @@ class WaitingLobbyActivity : AppCompatActivity() {
                     }
                 }
 
-                val countdownStart = snapshot.child("countdownStart").getValue(Boolean::class.java) ?: false
-                if (countdownStart && !countdownStarted) {
-                    countdownStarted = true
-                    countdownTimer?.cancel()
-                    binding.tvTimeout.visibility = View.GONE
-                    binding.btnCancel.visibility = View.GONE
-                    binding.btnCopyCode.visibility = View.GONE
-                    start321Countdown()
-                }
-
                 if (playerSlot == "player1" && !p2Uid.isNullOrEmpty() && !countdownStarted) {
-                    countdownStarted = true
                     countdownTimer?.cancel()
                     binding.tvTimeout.visibility = View.GONE
                     binding.btnCancel.visibility = View.GONE
                     binding.btnCopyCode.visibility = View.GONE
                     db.child("rooms").child(roomCode).child("countdownStart").setValue(true)
-                    start321Countdown()
                 }
             }
 
@@ -227,9 +313,9 @@ class WaitingLobbyActivity : AppCompatActivity() {
         roomListener?.let {
             db.child("rooms").child(roomCode).removeEventListener(it)
         }
+        if (::connectivityManager.isInitialized) {
+            connectivityManager.unregisterNetworkCallback(networkCallback)
+        }
+        heartbeatHandler.removeCallbacks(heartbeatRunnable)
     }
-
-
-
-
 }

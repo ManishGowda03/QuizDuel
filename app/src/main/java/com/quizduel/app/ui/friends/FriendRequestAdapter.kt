@@ -14,6 +14,7 @@ import com.quizduel.app.R
 import com.quizduel.app.data.model.FriendRequest
 import com.quizduel.app.ui.profile.AvatarUtils
 
+
 class FriendRequestAdapter(
     private val requests: List<FriendRequest>,
     private val onAccept: (FriendRequest) -> Unit,

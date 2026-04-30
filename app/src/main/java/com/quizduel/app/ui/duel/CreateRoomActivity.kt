@@ -17,6 +17,7 @@ import com.quizduel.app.data.model.RoomPlayer
 import com.quizduel.app.data.model.Topic
 import com.quizduel.app.databinding.ActivityCreateRoomBinding
 import android.content.Intent
+import com.quizduel.app.utils.NetworkUtils
 
 class CreateRoomActivity : AppCompatActivity() {
 
@@ -49,7 +50,11 @@ class CreateRoomActivity : AppCompatActivity() {
         loadTopics()
 
         binding.btnBack.setOnClickListener { finish() }
-        binding.btnCreateRoom.setOnClickListener { createRoom() }
+        binding.btnCreateRoom.setOnClickListener {
+            NetworkUtils.requireInternet(this) {
+                createRoom()
+            }
+        }
     }
 
     private fun setupCategoryFilter() {
@@ -158,6 +163,11 @@ class CreateRoomActivity : AppCompatActivity() {
     }
 
     private fun createRoom() {
+
+        if (!NetworkUtils.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show()
+            return
+        }
         val topic = selectedTopic
         if (topic == null) {
             Toast.makeText(this, "Please select a topic first", Toast.LENGTH_SHORT).show()

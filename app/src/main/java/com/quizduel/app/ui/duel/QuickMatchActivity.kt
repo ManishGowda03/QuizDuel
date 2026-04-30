@@ -10,6 +10,7 @@ import com.quizduel.app.R
 import com.quizduel.app.data.model.Room
 import com.quizduel.app.data.model.RoomPlayer
 import com.quizduel.app.databinding.ActivityQuickMatchBinding
+import com.quizduel.app.utils.NetworkUtils
 
 class QuickMatchActivity : AppCompatActivity() {
 
@@ -27,6 +28,11 @@ class QuickMatchActivity : AppCompatActivity() {
 
         binding.btnCancel.setOnClickListener { finish() }
 
+        if (!NetworkUtils.isInternetAvailable(this)) {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show()
+            finish()
+            return
+        }
         startQuickMatch()
     }
 

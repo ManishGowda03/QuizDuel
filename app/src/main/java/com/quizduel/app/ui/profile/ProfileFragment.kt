@@ -21,6 +21,8 @@ import com.quizduel.app.R
 import com.quizduel.app.databinding.FragmentProfileBinding
 import com.quizduel.app.ui.friends.FriendsActivity
 import coil.transform.CircleCropTransformation
+import com.quizduel.app.utils.NetworkUtils
+
 
 class ProfileFragment : Fragment() {
 
@@ -124,7 +126,9 @@ class ProfileFragment : Fragment() {
 
         // Save button
         binding.btnSaveProfile.setOnClickListener {
-            saveProfile()
+            NetworkUtils.requireInternet(requireContext()) {
+                saveProfile()
+            }
         }
 
         // Live username check
@@ -201,6 +205,10 @@ class ProfileFragment : Fragment() {
     }
 
     private fun saveProfile() {
+        if (!NetworkUtils.isInternetAvailable(requireContext())) {
+            Toast.makeText(requireContext(), "No internet connection", Toast.LENGTH_SHORT).show()
+            return
+        }
         val uid = auth.currentUser?.uid ?: return
         val newUsername = binding.etUsername.text.toString().trim()
             .ifEmpty { currentUsername }  // if empty keep current

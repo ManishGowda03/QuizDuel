@@ -6,8 +6,8 @@ A real-time multiplayer quiz battle Android app built using **Kotlin, MVVM archi
 
 ## 📥 Download APK
 
-👉 [Download Latest Version](#)  
-(*Add your GitHub Release link here*)
+👉 [Download Latest Version](https://github.com/ManishGowda03/QuizDuel/releases/download/v1.0/quizduel.apk)  
+
 
 ---
 

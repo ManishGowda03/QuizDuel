@@ -1,78 +1,102 @@
-# QuizDuel 🎯
+# 🎯 QuizDuel
 
-A real-time multiplayer quiz battle Android app built using **Kotlin, MVVM architecture, and Firebase Realtime Database**.
-
----
-
-## 📥 Download APK
-
-👉 [Download Latest Version](https://github.com/ManishGowda03/QuizDuel/releases/download/v1.0/quizduel.apk)  
-
+## 🧾 Overview  
+QuizDuel is a **real-time multiplayer quiz battle Android app** where users can compete with friends or random opponents in synchronized quiz matches.  
+Built using **Kotlin, MVVM architecture, and Firebase Realtime Database**, the app focuses on **live gameplay, fair scoring, and smooth network handling**, ensuring a competitive and reliable quiz experience.
 
 ---
 
 ## 🚀 Features
 
 ### 🧠 Quiz System
-- Single-player quiz mode
-- Multiple-choice questions
-- Timer-based answering system
+- Single-player quiz mode  
+- Multiple-choice questions  
+- Timer-based answering system  
 
 ### ⚔️ Multiplayer Battle
-- Quick Match (auto matchmaking)
-- Create Room & Invite Friends
-- Join Room via Code
-- Real-time synchronized gameplay
+- Quick Match (auto matchmaking)  
+- Create Room & Invite Friends  
+- Join Room via Code  
+- Real-time synchronized gameplay  
 
 ### 👥 Social Features
-- Friends module
-- Invite friends to battles
-- Battle history tracking
+- Friends module  
+- Invite friends to battles  
+- Battle history tracking  
+
+### 🏆 Leaderboard
+- Global ranking based on total score  
+- Highlights top players  
+- Real-time updates  
+
+### 🎯 Daily Challenge
+- One challenge per day  
+- Fixed topic for all users  
+- Single attempt tracking  
 
 ### 📡 Real-Time Sync (Core Feature)
-- Live question synchronization between players
-- Answer comparison with time-based scoring
-- Instant result calculation
-- Fair gameplay with synchronized timers
+- Live question synchronization between players  
+- Answer comparison with time-based scoring  
+- Instant result calculation  
+- Fair gameplay with synchronized timers  
 
 ### 🌐 Network Handling (Advanced)
-- Instant opponent disconnect detection
-- Handles internet loss gracefully
+- Instant opponent disconnect detection  
+- Handles internet loss gracefully  
 - Prevents stuck matches using:
   - Firebase `onDisconnect()`
-  - Heartbeat (lastSeen) mechanism
+  - Heartbeat (`lastSeen`) mechanism  
 
 ### 📥 Offline Support
-- Quiz topics auto-download when internet is available
-- Play quizzes offline without connection
+- Quiz topics auto-download when internet is available  
+- Play quizzes offline without connection  
+
+---
+
+## 📸 Screenshots
+
+### 🏠 Home Screen
+![Home](screenshots/homepage.jpeg)
+
+### 🧠 Quiz Screen
+![Quiz](screenshots/quizpage.jpeg)
+
+### ⚔️ Battle Screen
+![Battle](screenshots/battle_screen.jpeg)
+
+### 🏆 Leaderboard
+![Leaderboard](screenshots/leaderboard.jpeg)
+
+### 👥 Friends / Social
+![Friends](screenshots/friends_screen.jpeg)
 
 ---
 
 ## 🧱 Tech Stack
 
 ### 📱 Android
-- Kotlin
-- MVVM Architecture
-- ViewBinding
-- Navigation Component
+- Kotlin  
+- MVVM Architecture  
+- ViewBinding  
+- Navigation Component  
 
 ### ☁️ Firebase
-- Firebase Authentication (Email/Password)
-- Firebase Realtime Database (real-time multiplayer sync)
+- Firebase Authentication (Email/Password)  
+- Firebase Realtime Database (real-time multiplayer sync)  
 
 ### 🎨 UI
-- Material Components
-- ConstraintLayout
-- RecyclerView + CardView
-- Lottie Animations
+- Material Components  
+- ConstraintLayout  
+- RecyclerView + CardView  
+- Lottie Animations  
 
 ### 🖼️ Image Loading
-- Glide (topic images)
-- Coil + SVG (DiceBear avatars)
+- Glide (topic images)  
+- Coil + SVG (DiceBear avatars)  
 
 ### ⚡ Async Handling
-- Kotlin Coroutines
-- Firebase Realtime Listeners
+- Kotlin Coroutines  
+- Firebase Realtime Listeners  
 
 ---
 
@@ -84,6 +108,12 @@ A real-time multiplayer quiz battle Android app built using **Kotlin, MVVM archi
 - Real-Time Sync Module  
 - Friends Module  
 - Battle History Module  
+
+---
+
+## 📥 Download APK
+
+👉 [Download Latest Version](https://github.com/ManishGowda03/QuizDuel/releases/download/v1.0/quizduel.apk)
 
 ---
 

@@ -55,20 +55,16 @@ Built using **Kotlin, MVVM architecture, and Firebase Realtime Database**, the a
 
 ## 📸 Screenshots
 
-### 🏠 Home Screen
-![Home](screenshots/homepage.jpeg)
+<p align="center">
+  <img src="screenshots/homepage.jpeg" width="250"/>
+  <img src="screenshots/quizpage.jpeg" width="250"/>
+</p>
 
-### 🧠 Quiz Screen
-![Quiz](screenshots/quizpage.jpeg)
-
-### ⚔️ Battle Screen
-![Battle](screenshots/battle_screen.jpeg)
-
-### 🏆 Leaderboard
-![Leaderboard](screenshots/leaderboard.jpeg)
-
-### 👥 Friends / Social
-![Friends](screenshots/friends_screen.jpeg)
+<p align="center">
+  <img src="screenshots/battle_screen.jpeg" width="250"/>
+  <img src="screenshots/leaderboard.jpeg" width="250"/>
+  <img src="screenshots/friends_screen.jpeg" width="250"/>
+</p>
 
 ---
 

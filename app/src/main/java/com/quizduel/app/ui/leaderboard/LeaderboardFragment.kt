@@ -12,6 +12,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.quizduel.app.R
 import com.quizduel.app.databinding.FragmentLeaderboardBinding
+import android.util.Log
 
 class LeaderboardFragment : Fragment() {
 
@@ -48,38 +49,47 @@ class LeaderboardFragment : Fragment() {
     }
 
     private fun loadLeaderboard() {
-        db.child("users").orderByChild("totalScore")
-            .addListenerForSingleValueEvent(object : ValueEventListener {
+
+        db.child("users")
+            .orderByChild("totalScore")
+            .addValueEventListener(object : ValueEventListener {
+
                 override fun onDataChange(snapshot: DataSnapshot) {
+
                     if (_binding == null) return
+
                     playersList.clear()
 
-                    snapshot.children.forEach { child ->
-                        val role = child.child("role").getValue(String::class.java) ?: "player"
-                        // Skip admin accounts
-                        if (role == "admin") return@forEach
+                    for (child in snapshot.children) {
 
-                        val uid = child.child("uid").getValue(String::class.java) ?: ""
-                        val username = child.child("username").getValue(String::class.java) ?: ""
+                        val role = child.child("role").getValue(String::class.java) ?: "player"
+                        if (role == "admin") continue
+
+                        val uid = child.key ?: continue
+                        val username = child.child("username").getValue(String::class.java) ?: "Unknown"
                         val totalScore = child.child("totalScore").getValue(Int::class.java) ?: 0
                         val wins = child.child("wins").getValue(Int::class.java) ?: 0
                         val matches = child.child("matchesPlayed").getValue(Int::class.java) ?: 0
                         val avatarId = child.child("avatarId").getValue(Int::class.java) ?: 1
 
-                        if (uid.isNotEmpty()) {
-                            playersList.add(
-                                LeaderboardPlayer(uid, username, totalScore, wins, matches, avatarId)
-                            )
-                        }
+                        playersList.add(
+                            LeaderboardPlayer(uid, username, totalScore, wins, matches, avatarId)
+                        )
                     }
 
-                    // Sort descending by score
+                    // sort descending
                     playersList.sortByDescending { it.totalScore }
 
-                    // Load friend status then update UI
+                    // update UI
+                    leaderboardAdapter.notifyDataSetChanged()
+
+                    // optional
                     loadFriendStatusThenShow()
                 }
-                override fun onCancelled(error: DatabaseError) {}
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(requireContext(), "Error: ${error.message}", Toast.LENGTH_SHORT).show()
+                }
             })
     }
 

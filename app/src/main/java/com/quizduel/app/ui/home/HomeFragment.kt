@@ -8,6 +8,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -16,11 +17,15 @@ import com.google.firebase.database.ValueEventListener
 import com.quizduel.app.data.model.Topic
 import com.quizduel.app.databinding.FragmentHomeBinding
 import com.quizduel.app.ui.quiz.QuizActivity
+import com.google.firebase.database.MutableData
+import com.google.firebase.database.Transaction
 
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
+
+    private var isDailyLoaded = false
 
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var recentQuizAdapter: RecentQuizAdapter
@@ -56,49 +61,123 @@ class HomeFragment : Fragment() {
     }
 
     private fun loadDailyChallenge() {
-        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
+
+
+
+        if (isDailyLoaded) return
+        isDailyLoaded = true
+
+        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            .format(java.util.Date())
+
+        val prefs = requireContext().getSharedPreferences("QuizDuelPrefs", Context.MODE_PRIVATE)
+        val lastCreated = prefs.getString("daily_created_date", "")
+
         val dailyRef = FirebaseDatabase.getInstance().getReference("dailyChallenge")
 
-        dailyRef.get().addOnSuccessListener { snapshot ->
-            if (_binding == null) return@addOnSuccessListener
-            val storedDate = snapshot.child("date").getValue(String::class.java) ?: ""
-            if (storedDate == today) {
-                val topicId = snapshot.child("topicId").getValue(String::class.java) ?: ""
-                val topicName = snapshot.child("topicName").getValue(String::class.java) ?: ""
+        dailyRef.addListenerForSingleValueEvent(object : ValueEventListener {
 
-                val countObj = snapshot.child("questionCount").value
-                val questionCount = when (countObj) {
-                    is Long -> countObj.toInt()
-                    is String -> countObj.toIntOrNull() ?: 0
-                    else -> 0
+            override fun onDataChange(snapshot: DataSnapshot) {
+
+                if (_binding == null) return
+
+                val storedDate = snapshot.child("date").getValue(String::class.java)
+
+                // ✅ CASE 1: Already today → use it
+                if (storedDate == today) {
+
+                    val topicId = snapshot.child("topicId").getValue(String::class.java) ?: ""
+                    val topicName = snapshot.child("topicName").getValue(String::class.java) ?: ""
+                    val questionCount = snapshot.child("questionCount").getValue(Int::class.java) ?: 0
+
+                    updateDailyChallengeUI(topicId, topicName, questionCount, today)
+                    return
                 }
 
-                updateDailyChallengeUI(topicId, topicName, questionCount, today)
-            } else {
-                pickNewDailyChallenge(today)
+                // ✅ CASE 2: No data → create once
+                if (!snapshot.exists()) {
+                    createDailyChallengeOnce(today)
+                    return
+                }
+
+                // ✅ CASE 3: Old data exists → DO NOT overwrite
+                val topicId = snapshot.child("topicId").getValue(String::class.java) ?: ""
+                val topicName = snapshot.child("topicName").getValue(String::class.java) ?: ""
+                val questionCount = snapshot.child("questionCount").getValue(Int::class.java) ?: 0
+
+                updateDailyChallengeUI(topicId, topicName, questionCount, storedDate ?: today)
             }
-        }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
     }
 
-    private fun pickNewDailyChallenge(today: String) {
-        FirebaseDatabase.getInstance().getReference("topics").get().addOnSuccessListener { snapshot ->
-            if (_binding == null) return@addOnSuccessListener
-            val topics = mutableListOf<Topic>()
-            for (topicSnap in snapshot.children) {
-                val topic = topicSnap.getValue(Topic::class.java)
-                if (topic != null && topic.isActive) topics.add(topic)
-            }
-            if (topics.isEmpty()) return@addOnSuccessListener
-            val randomTopic = topics.random()
+    private fun createDailyChallengeOnce(today: String) {
 
-            val dailyMap = mapOf(
-                "topicId" to randomTopic.id,
-                "topicName" to randomTopic.name,
-                "questionCount" to randomTopic.questionCount,
-                "date" to today
-            )
-            FirebaseDatabase.getInstance().getReference("dailyChallenge").setValue(dailyMap)
-            updateDailyChallengeUI(randomTopic.id, randomTopic.name, randomTopic.questionCount, today)
+        val dailyRef = FirebaseDatabase.getInstance().getReference("dailyChallenge")
+
+        // 🔥 FIRST check again BEFORE writing (atomic style)
+        dailyRef.get().addOnSuccessListener { snapshot ->
+
+            val existingDate = snapshot.child("date").getValue(String::class.java)
+
+            // ✅ STOP if already created
+            if (existingDate == today) return@addOnSuccessListener
+
+            FirebaseDatabase.getInstance().getReference("topics")
+                .get()
+                .addOnSuccessListener { topicSnapshot ->
+
+                    if (_binding == null) return@addOnSuccessListener
+
+                    val topics = mutableListOf<Topic>()
+
+                    for (topicSnap in topicSnapshot.children) {
+                        val topic = topicSnap.getValue(Topic::class.java)
+                        if (topic != null && topic.isActive) topics.add(topic)
+                    }
+
+                    if (topics.isEmpty()) return@addOnSuccessListener
+
+                    val randomTopic = topics.random()
+
+                    val dailyMap = mapOf(
+                        "topicId" to randomTopic.id,
+                        "topicName" to randomTopic.name,
+                        "questionCount" to randomTopic.questionCount,
+                        "date" to today
+                    )
+
+                    dailyRef.runTransaction(object : Transaction.Handler {
+                        override fun doTransaction(currentData: MutableData): Transaction.Result {
+
+                            val existingDate = currentData.child("date").getValue(String::class.java)
+
+                            // ✅ If already created → abort
+                            if (existingDate == today) {
+                                return Transaction.abort()
+                            }
+
+                            currentData.value = dailyMap
+                            return Transaction.success(currentData)
+                        }
+
+                        override fun onComplete(
+                            error: DatabaseError?,
+                            committed: Boolean,
+                            snapshot: DataSnapshot?
+                        ) {
+                            if (committed) {
+                                val topicId = dailyMap["topicId"] as String
+                                val topicName = dailyMap["topicName"] as String
+                                val questionCount = dailyMap["questionCount"] as Int
+
+                                updateDailyChallengeUI(topicId, topicName, questionCount, today)
+                            }
+                        }
+                    }
+                    )
+                }
         }
     }
 
@@ -215,5 +294,6 @@ class HomeFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        isDailyLoaded = false
     }
 }
